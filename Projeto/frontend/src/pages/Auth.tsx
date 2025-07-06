@@ -117,8 +117,8 @@ const Auth = () => {
         const { user, token } = response.data;
         
         // Armazenar token e user no localStorage ou contexto de autenticação
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
+localStorage.setItem('session', JSON.stringify({ token, user }));
+ 
 
         toast({
           title: "Login realizado com sucesso",
@@ -135,7 +135,8 @@ const Auth = () => {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
-          password: formData.password
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
         });
 
         toast({

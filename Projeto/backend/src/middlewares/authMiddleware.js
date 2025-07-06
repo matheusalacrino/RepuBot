@@ -1,43 +1,32 @@
-// backend/src/middlewares/validation.js
-const { body } = require('express-validator');
+// backend/src/middlewares/authMiddleware.js
+const jwt = require('jsonwebtoken');
 
-exports.registerValidation = [
-  body('name')
-    .trim()
-    .notEmpty().withMessage('Nome é obrigatório')
-    .isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
 
-  body('email')
-    .trim()
-    .notEmpty().withMessage('Email é obrigatório')
-    .isEmail().withMessage('Email inválido')
-    .normalizeEmail(),
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Token não fornecido' });
+    }
 
-  body('phone')
-    .trim()
-    .notEmpty().withMessage('Telefone é obrigatório')
-    .matches(/^\(\d{2}\)\s\d{4,5}-\d{4}$/).withMessage('Telefone inválido'),
+    // O header vem no formato "Bearer <token>"
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
 
-  body('password')
-    .trim()
-    .notEmpty().withMessage('Senha é obrigatória')
-    .isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+    const secret = process.env.JWT_SECRET || 'seu_segredo_supersecreto';
 
-  body('confirmPassword')
-    .trim()
-    .notEmpty().withMessage('Confirmação de senha é obrigatória')
-    .custom((value, { req }) => value === req.body.password)
-    .withMessage('Senhas não coincidem'),
-];
+    const decoded = jwt.verify(token, secret);
 
-exports.loginValidation = [
-  body('email')
-    .trim()
-    .notEmpty().withMessage('Email é obrigatório')
-    .isEmail().withMessage('Email inválido')
-    .normalizeEmail(),
+    // Popula req.user com os dados do token decodificado
+    req.user = decoded;
 
-  body('password')
-    .trim()
-    .notEmpty().withMessage('Senha é obrigatória'),
-];
+    // Continua para o controller
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
+  }
+};
+
+module.exports = authMiddleware;

@@ -6,7 +6,7 @@ const TokenService = require('../../../shared/services/tokenService');
 const EmailService = require('./emailService');
 
 class AuthService {
-  static async register({ name, email, phone, password }) {
+  static async register({ name, email, phone, password, confirmPassword }) {
     // Verificar se o usuário já existe
     const existingUser = await User.findByEmail(email);
     if (existingUser) {

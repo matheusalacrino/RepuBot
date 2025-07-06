@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSession } from "../contexts/SessionContext";
 import { 
   Card, 
   CardContent, 
@@ -28,6 +29,7 @@ import {
   Search,
   UserCircle
 } from "lucide-react";
+import WhatsAppModule from "@/components/dashboard/WhatsAppModule";
 import ClientsModule from "@/components/dashboard/ClientsModule";
 import AutomationModule from "@/components/dashboard/AutomationModule";
 import ReputationModule from "@/components/dashboard/ReputationModule";
@@ -35,14 +37,15 @@ import ReportsModule from "@/components/dashboard/ReportsModule";
 import SettingsModule from "@/components/dashboard/SettingsModule";
 
 const Dashboard = () => {
+  const { session } = useSession();
   const [activeModule, setActiveModule] = useState("overview");
-  const userName = "João";
-  const userInitial = userName.charAt(0);
+  const userName = session?.user?.name || "Operador";
+  const userInitial = userName.charAt(0).toUpperCase();
 
   // Estados simulados
-  const [whatsappConnected, setWhatsappConnected] = useState(true);
+  const [whatsappConnected, setWhatsappConnected] = useState(false);
   const [companySetup, setCompanySetup] = useState(true);
-  const [firstSends, setFirstSends] = useState(true);
+  const [firstSends, setFirstSends] = useState(false);
   const [reviewsReceived, setReviewsReceived] = useState(false);
 
   const onboardingProgress = [whatsappConnected, companySetup, firstSends, reviewsReceived].filter(Boolean).length * 25;
@@ -219,119 +222,10 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderWhatsApp = () => (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-green-500" />
-            WhatsApp Business
-          </h1>
-          <p className="text-gray-600">Gerencie sua conexão e envios pelo WhatsApp</p>
-        </div>
-        <Button variant="outline">
-          <HelpCircle className="w-4 h-4 mr-2" />
-          Ajuda
-        </Button>
-      </div>
-
-      <Card>
-        <CardContent className="p-6 space-y-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 border rounded-lg bg-gray-50">
-            <div className="flex items-center gap-4">
-              {whatsappConnected ? (
-                <div className="p-2 rounded-full bg-green-100">
-                  <CheckCircle2 className="w-6 h-6 text-green-600" />
-                </div>
-              ) : (
-                <div className="p-2 rounded-full bg-orange-100">
-                  <AlertCircle className="w-6 h-6 text-orange-600" />
-                </div>
-              )}
-              <div>
-                <h3 className="font-medium">
-                  {whatsappConnected ? "WhatsApp Conectado" : "WhatsApp Desconectado"}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {whatsappConnected ? "+55 11 99999-9999" : "Conecte sua conta para começar"}
-                </p>
-              </div>
-            </div>
-            <Button 
-              onClick={() => setWhatsappConnected(!whatsappConnected)}
-              variant={whatsappConnected ? "outline" : "default"}
-              className="shrink-0"
-            >
-              {whatsappConnected ? "Gerenciar" : "Conectar"}
-            </Button>
-          </div>
-
-          {whatsappConnected && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Configurações da Empresa</CardTitle>
-                    <CardDescription>Personalize como sua empresa aparece</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Nome da empresa</label>
-                      <input 
-                        className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                        placeholder="Minha Empresa Ltda"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Tom da mensagem</label>
-                      <select className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                        <option>Formal</option>
-                        <option>Informal</option>
-                        <option>Amigável</option>
-                      </select>
-                    </div>
-                    <Button className="mt-2">Salvar alterações</Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Mensagem Padrão</CardTitle>
-                    <CardDescription>Modelo para pesquisas de satisfação</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <textarea 
-                      className="w-full h-32 p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none text-sm"
-                      placeholder="Olá [Nome]! Como foi sua experiência conosco? Sua opinião é muito importante para melhorarmos nosso atendimento."
-                    />
-                    <div className="flex justify-end mt-3">
-                      <Button size="sm">Salvar modelo</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button variant="outline" className="flex-1">
-                  <Send className="w-4 h-4 mr-2" />
-                  Testar envio agora
-                </Button>
-                <Button variant="outline" className="flex-1">
-                  <Users className="w-4 h-4 mr-2" />
-                  Enviar para lista de clientes
-                </Button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-
   const renderContent = () => {
     switch (activeModule) {
       case "whatsapp":
-        return renderWhatsApp();
+        return <WhatsAppModule />;
       case "clients":
         return <ClientsModule />;
       case "automation":
